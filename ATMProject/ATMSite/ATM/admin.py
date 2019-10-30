@@ -7,5 +7,5 @@ from .models import AccountExtension, AtmCard, AtMachine, ATMachineRefill, Trans
 admin.site.register(AccountExtension)
 admin.site.register(AtmCard)
 admin.site.register(AtMachine)
-#admin.site.register(ATMachineRefill)
-#admin.site.register(Transaction)
+admin.site.register(ATMachineRefill)
+admin.site.register(Transaction)

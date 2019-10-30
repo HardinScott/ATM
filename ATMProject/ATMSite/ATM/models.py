@@ -29,7 +29,7 @@ class AtMachine(models.Model):
 	Last_Refill_Date = models.DateField()
 	Next_Maintenance_Date = models.DateField()
 
-class ATMachineRefill:
+class ATMachineRefill(models.Model):
 	Refill_ID = models.AutoField(primary_key = True)
 	At_Machine_UID = models.ForeignKey(AtMachine, on_delete=models.PROTECT)
 	Amount = models.DecimalField(max_digits=25,decimal_places=0,default=0)
@@ -37,7 +37,7 @@ class ATMachineRefill:
 	Refill_Date = models.DateField()
 	Previous_Balance = models.DecimalField(max_digits=25,decimal_places=0,default=0)
 
-class Transaction:
+class Transaction(models.Model):
 	Transaction_ID = models.AutoField(primary_key=True)
 	ATM_Card_Number = models.ForeignKey(AtmCard, on_delete=models.PROTECT)
 	Date = models.DateField()
