@@ -47,3 +47,27 @@ class Transaction(models.Model):
 	Type_Of_Transaction = models.CharField(max_length=50)
 
 
+class Phone_Change(models.Model):
+	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	New_Phone_Number = models.CharField(max_length=20, default='0')
+
+class Pin_Change(models.Model):
+	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Previous_Pin = models.IntegerField()
+	New_Pin = models.IntegerField()
+
+class Cash_Withdrawal(models.Model):
+	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Amount_Transferred = models.DecimalField(max_digits=25, decimal_places=2,default=0)
+	Denomination = models.CharField(max_length=20, default='USD')
+	Current_Balance = models.DecimalField(max_digits=20, decimal_places=10, default=0)
+
+class Cash_Transfer(models.Model):
+	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Beneficiary_Account_Number = models.IntegerField()
+	Beneficiary_Name = models.CharField(max_length=60)
+	Amout_Transferred = models.DecimalField(max_digits=25, decimal_places=2,default=0)
+
+class Balance_Enquiry(models.Model):
+	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Balance_Amount = models.DecimalField(max_digits=20, decimal_places=10, default=0)
