@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -71,3 +72,7 @@ class Cash_Transfer(models.Model):
 class Balance_Enquiry(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	Balance_Amount = models.DecimalField(max_digits=20, decimal_places=10, default=0)
+
+class Profile(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE)
+

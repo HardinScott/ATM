@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf.urls import url
 from . import views
 
 urlpatterns = [
@@ -7,6 +8,6 @@ urlpatterns = [
 	path('home/', views.index, name='index'),
 	path('enquiry/', views.enquiry, name='enquiry'),
 	path('withdraw/', views.withdraw, name='withdraw'),
-	path('transfer/', views.transfer, name='transfer'),
+	path('<int:Account_Number>/transfer/', views.transfer, name='transfer'),
 	path('confirm/', views.confirm, name='confirm'),
 ]
