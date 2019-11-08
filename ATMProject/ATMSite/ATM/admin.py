@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AccountExtension, AtmCard, AtMachine, ATMachineRefill, Transaction, Phone_Change, Pin_Change, Cash_Withdrawal, Cash_Transfer, Balance_Enquiry
+from ATM.models import *
 
 # Register your models here.
 
