@@ -57,14 +57,18 @@ def transfer(request, Account_Number):
 
 
 def confirm(request):
-    transType = request.POST['TransactionType']
-    if transType == "Withdraw":
-        message = processing.withdraw(request)
-    elif transType == "Transfer":
-        message = processing.transfer(request)
-    elif transType == "Enquiry":
-        message = processing.transfer(request)
-    else:
-        raise Exception("Invalid transaction type")
 
-    return HttpResponse(message)
+	if request.method == 'POST':
+		transType = request.POST['TransactionType']
+		if transType=="Withdraw":
+			message = processing.withdraw(request)
+		elif transType == "Transfer":
+			message = processing.transfer(request)
+		elif transType == "Enquiry":
+			message = processing.enquiry(request)
+		else:
+			raise "Invalid transaction type"
+	else:
+		message = "Request not a post. No transaction took place"
+
+	return render(request, 'ATM/confirm.html', {'message':message,},)
