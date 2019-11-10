@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 
 # Create your models here.
 
@@ -8,6 +8,8 @@ class AccountExtension(models.Model):
 	Name = models.CharField(max_length=60)
 	Phone_Number = models.CharField(max_length=20)
 	Balance = models.DecimalField(max_digits=20, decimal_places = 10,default=0)
+	def __str__(self):
+		return str(self.Account_Number)
 
 class AtmCard(models.Model):
 	Atm_Card_Number = models.AutoField(primary_key=True)
@@ -73,6 +75,81 @@ class Balance_Enquiry(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	Balance_Amount = models.DecimalField(max_digits=20, decimal_places=10, default=0)
 
-class Profile(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
+#custom user creation
+class UserManager(BaseUserManager):
+	#creates standard user with requred information
+	def create_user(self, username, password=None, is_staff=False, is_admin=False, is_active=True):
+		if not username:
+			raise ValueError("Users must have a username")
+		if not password:
+			raise ValueError("Users must have a password")
+		userObj = self.model(
+			username=username
+		)
+		userObj.set_password(password)
+		userObj.staff = is_staff
+		userObj.admin = is_admin
+		userObj.active = is_active
+		userObj.save(using=self._db)
+		return userObj
+	#creates user with staff prermissions
+	def create_staffuser(self, username, password=None):
+		user = self.create_user(
+			username,
+			password=password,
+			is_staff=True
+		)
 
+		return user
+	#creates user with Admin permissions
+	def create_superuser(self, username, password=None):
+		user = self.create_user(
+			username,
+			password=password,
+			is_staff=True,
+			is_admin=True
+		)
+		return user
+
+#sets custom userprofile and requred information
+class User(AbstractBaseUser):
+	username = models.CharField(max_length=20, unique=True)
+	active = models.BooleanField(default=True)
+	staff = models.BooleanField(default=False) # a dmin user; non super-user
+	admin = models.BooleanField(default=False) # a superuser
+	Account_Number = models.ForeignKey(AccountExtension, on_delete=models.PROTECT, blank=True, null=True)
+	USERNAME_FIELD = 'username'
+	#username and password are required by default
+
+	REQUIRED_FIELDS = []
+
+	objects = UserManager()
+
+	def __str__(self):
+		return self.username
+
+	def get_full_name(self):
+		return self.username
+	
+	def get_short_name(self):
+		return self.username
+
+	def has_perm(self, perm, obj=None):
+		return True
+	
+	def has_module_perms(self, app_label):
+		return True
+
+	@property
+	def is_staff(self):
+		return self.staff
+	
+	@property
+	def is_admin(self):
+		return self.admin
+	
+	@property
+	def is_active(self):
+		return self.active
+	
+	

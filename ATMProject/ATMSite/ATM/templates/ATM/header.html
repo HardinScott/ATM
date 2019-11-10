@@ -1,0 +1,51 @@
+<!--contains formatting for all html documents, provides header with login/logout and Title-->
+<head>
+    {% load static %}
+     <!-- Compiled and minified CSS -->
+         <link href="{% static 'ATM/css/materialize.css' %}" rel="stylesheet">
+
+     <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>          
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+          <a href="/ATM" class="brand-logo center">SRW ATM</a>
+          <ul id="nav-mobile" class="left hide-on-med-and-down">
+            <!--if authenticated provide logout button else login button-->
+            {% if user.is_authenticated %}
+                <li><a href="/ATM">Home</a></li>
+                <li><a href="/ATM/logout">Logout</a></li>
+                
+
+            {% else %}
+                <li><a href="/ATM">Home</a></li>
+                <li><a href="/ATM/login">Login</a></li>
+                
+            {% endif %}
+
+          </ul>
+        </div>
+    </nav>
+    <!-- message system for displaying messages to current user-->
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success'%}
+                <script>M.toast({html: "{{message}}", classes: 'green rounded', displayLength:2000});</script>
+            {% elif message.tags == 'info'%}
+                <script>M.toast({html: "{{message}}", classes: 'blue rounded', displayLength:2000});</script>
+            {% elif message.tags == 'warning'%}
+                <script>M.toast({html: "{{message}}", classes: 'orange rounded', displayLength:10000});</script>
+            {% elif message.tags == 'error'%}
+                <script>M.toast({html: "{{message}}", classes: 'red rounded', displayLength:10000});</script>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <!--moves contents of page away from edge of screen-->
+    <div class="container">
+        <br>
+        {% block content %}
+        {% endblock %}
+    </div>    
+</body>

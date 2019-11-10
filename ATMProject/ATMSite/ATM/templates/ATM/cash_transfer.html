@@ -1,12 +1,11 @@
+{% extends "ATM/header.html" %}
+
+{%block content %}
 <h1>Cash Transfer</h1>
-
-<form action="{ url'ATM:<int:Account_Number>/transfer/' }" method="post">
+<form method="post">
     {% csrf_token %}
-
-    <h3 style="font-weight: 300;">
         {{ form }}
-    </h3>
     
-    <small>By transferring money from your account, you agree to the <a href="#">Terms and Conditions</a> of amount transfer</small>. <br>
     <button type="submit" class="btn btn-primary">Transfer amount</button>
 </form>
+{% endblock %}
