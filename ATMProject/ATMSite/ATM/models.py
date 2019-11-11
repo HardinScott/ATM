@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
+from random import randint
 
 # Create your models here.
 
@@ -8,6 +9,16 @@ class AccountExtension(models.Model):
 	Name = models.CharField(max_length=60)
 	Phone_Number = models.CharField(max_length=20)
 	Balance = models.DecimalField(max_digits=20, decimal_places = 10,default=0)
+
+	def save(self):
+		if not self.Account_Number: #if this account is being saved for the first time now
+			is_unique = False
+			while not is_unique:
+				AccNum = randint(10000000, 99999999)
+				is_unique = (AccountExtension.objects.filter(Account_Number=AccNum).count() == 0)
+			self.Account_Number = AccNum
+		super(AccountExtension, self).save()
+
 	def __str__(self):
 		return str(self.Account_Number)
 

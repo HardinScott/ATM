@@ -97,31 +97,13 @@ def transfer(request):
 
             user_acc.save() #save new balance to user
             dest_acc.save()#save new balance to destination
-
-        return redirect("ATM:confirm")
+        messages.info(request, "Transfer Successful!")
+        return redirect("ATM:homepage", Transaction_ID=t.Transaction_ID)
 
     else:
         form = forms.CashTransForm()
 
     return render(request, "ATM/cash_transfer.html", {"form": form})
-
-
-def confirm(request):
-
-	if request.method == 'POST':
-		transType = request.POST['TransactionType']
-		if transType=="Withdraw":
-			message = processing.withdraw(request)
-		elif transType == "Transfer":
-			message = processing.transfer(request)
-		elif transType == "Enquiry":
-			message = processing.enquiry(request)
-		else:
-			raise "Invalid transaction type"
-	else:
-		message = "Request not a post. No transaction took place"
-
-	return render(request, 'ATM/confirm.html', {'message':message,},)
 
 #Logout current user
 def logout_request(request):
