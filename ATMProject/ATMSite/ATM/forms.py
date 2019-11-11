@@ -10,6 +10,11 @@ class CashTransForm(forms.ModelForm):
         model = models.Cash_Transfer
         fields = ['Beneficiary_Account_Number', 'Beneficiary_Name', 'Amout_Transferred']
 
+class CashWithdrawal(forms.ModelForm):
+    class Meta:
+        model = models.Cash_Withdrawal
+        fields = ['Amount_Transferred']
+
 class UserAdminCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
