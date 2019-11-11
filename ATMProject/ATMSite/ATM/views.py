@@ -23,28 +23,34 @@ def enquiry(request):
 def withdraw(request):
     return render(request, "ATM/withdraw.html")
 
-@login_required(login_url="/ATM/login/")
 def transfer(request):
-    #creates new transaction and gets information
-    t = models.Transaction(
-        ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
-        Date=timezone.now(),
-        At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
-        Status="Unsucessful",
-        Response_Code="Unable to process",
-        Type_Of_Transaction="Transfer"
-    )
-    t.save() #save tranaction with base info
-
     #gets information from CashTransForm
     if request.method == "POST":
+        if request.user.is_authenticated:
+            user_acc = request.user.Account_Number #get current user AccountExtension model
+        else:
+            atm_card = models.AtmCard.objects.get(Account_Number=request.POST.get('card_numb'))
+            pin_numb = request.POST.cleaned_data.get('pin_numb')
+            if atm_card is None or  not atm_card.PIN == pin_numb:
+                messages.error(request, "Atm card number or pin not valid!")
+                return redirect("ATM:homepage")
+            user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number)
+            #creates new transaction and gets information
+        t = models.Transaction(
+            ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
+            Date=timezone.now(),
+            At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
+            Status="Unsucessful",
+            Response_Code="Unable to process",
+            Type_Of_Transaction="Transfer"
+        )
+        t.save() #save tranaction with base info
         form = forms.CashTransForm(request.POST)
         #if valid get transaction id and save cash_transfer model
         if form.is_valid():
             form.Transaction_ID = t.Transaction_ID
             form.save()
-
-            user_acc = request.user.Account_Number #get current user AccountExtension model
+            
             dest_acc = models.AccountExtension.objects.get(Account_Number=form.cleaned_data.get('Beneficiary_Account_Number')) #get destination Account Extension
 
             transfer_ammount = form.cleaned_data.get('Amout_Transferred') #get tranfer ammount from form
@@ -64,6 +70,8 @@ def transfer(request):
     else:
         form = forms.CashTransForm()
 
+    if not request.user.is_authenticated:
+        return render(request, "ATM/unath_cash_transfer.html", {"form": form})
     return render(request, "ATM/cash_transfer.html", {"form": form})
 
 #Logout current user

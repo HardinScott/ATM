@@ -1,0 +1,13 @@
+{% extends "ATM/header.html" %}
+
+{%block content %}
+<h1>Cash Transfer</h1>
+<form method="post">
+    {% csrf_token %}
+        Account Number: <input type="number" name="acc_numb"><br>
+        Pin: <input type="number" name="pin_numb"><br>
+        {{ form }}
+    
+    <button type="submit" class="btn btn-primary">Transfer amount</button>
+</form>
+{% endblock %}
