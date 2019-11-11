@@ -1,0 +1,11 @@
+{% extends "ATM/header.html"%}
+
+{% block content %}
+<h1>Transaction Outcome</h1>
+
+<p>{{message}}</p>
+
+<form method="get" action="/ATM/">
+    <button type="submit" class="btn btn-primary">Return Home</button>
+</form>
+{% endblock %}
