@@ -34,6 +34,16 @@ class AtmCard(models.Model):
 	Phone_Number = models.CharField(max_length=20)
 	Card_Status = models.CharField(max_length=50)
 
+	def save(self):
+		if not self.Atm_Card_Number: #if this account is being saved for the first time now
+			is_unique = False
+			while not is_unique:
+				CardNum = randint(1000000000000000, 9999999999999999)
+				is_unique = (AtmCard.objects.filter(Atm_Card_Number=CardNum).count() == 0)
+			self.Atm_Card_Number = CardNum
+		super(AtmCard, self).save()
+
+
 class AtMachine(models.Model):
 	At_Machine_UID = models.AutoField(primary_key = True)
 	Current_Balance = models.DecimalField(max_digits=25,decimal_places=0,default=0)
