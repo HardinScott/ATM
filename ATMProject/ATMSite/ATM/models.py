@@ -43,6 +43,9 @@ class AtmCard(models.Model):
 			self.Atm_Card_Number = CardNum
 		super(AtmCard, self).save()
 
+	def __str__(self):
+		return str(self.Atm_Card_Number)
+
 
 class AtMachine(models.Model):
 	At_Machine_UID = models.AutoField(primary_key = True)

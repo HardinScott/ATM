@@ -63,39 +63,46 @@ def withdraw(request):
     return render(request, "ATM/withdraw.html")
 
 def transfer(request):
-    #gets information from CashTransForm
+    #gets information from CashTransForms
     if request.method == "POST":
-        if request.user.is_authenticated:
-            user_acc = request.user.Account_Number #get current user AccountExtension model
+        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        if not request.user.is_authenticated:
+            form = forms.CashTransNotLoginForm(request.POST)
         else:
-            atm_card = models.AtmCard.objects.get(Account_Number=request.POST.get('card_numb'))
-            pin_numb = request.POST.cleaned_data.get('pin_numb')
-            if atm_card is None or  not atm_card.PIN == pin_numb:
-                messages.error(request, "Atm card number or pin not valid!")
-                return redirect("ATM:homepage")
-            user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number)
-            #creates new transaction and gets information
-        t = models.Transaction(
-            ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
-            Date=timezone.now(),
-            At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
-            Status="Unsucessful",
-            Response_Code="Unable to process",
-            Type_Of_Transaction="Transfer"
-        )
-        t.save() #save tranaction with base info
-        form = forms.CashTransForm(request.POST)
+            form = forms.CashTransForm(request.POST)
         #if valid get transaction id and save cash_transfer model
+
         if form.is_valid():
-            form.Transaction_ID = t.Transaction_ID
-            form.save()
+            if request.user.is_authenticated:
+                user_acc = request.user.Account_Number #get current user AccountExtension model
+            else:
+                atm_card = models.AtmCard.objects.get(Atm_Card_Number=1)
+                pin_numb = form.cleaned_data.get('pin')
+                if atm_card is None or atm_card.PIN != pin_numb:
+                    messages.error(request, "Atm card number or pin not valid!")
+                    return redirect("ATM:transfer")
+                user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number.Account_Number) #get Account Extension from atm card
+                #creates new transaction and gets information
+            #start a new transaction
+            t = models.Transaction(
+                ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
+                Date=timezone.now(),
+                At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
+                Status="Unsucessful",
+                Response_Code="Unable to process",
+                Type_Of_Transaction="Transfer"
+            )
+            t.save() #save tranaction with base info
+
+            form.Transaction_ID = t.Transaction_ID #put trans id into transfer model
+            form.save() #save Cash_Transfer model
             
             dest_acc = models.AccountExtension.objects.get(Account_Number=form.cleaned_data.get('Beneficiary_Account_Number')) #get destination Account Extension
 
             transfer_ammount = form.cleaned_data.get('Amout_Transferred') #get tranfer ammount from form
 
-            user_acc.Balance = user_acc.Balance -  transfer_ammount
-            dest_acc.Balance = dest_acc.Balance - transfer_ammount
+            user_acc.Balance = user_acc.Balance -  transfer_ammount #update user_acc balance with balance minus transfered ammount
+            dest_acc.Balance = dest_acc.Balance - transfer_ammount #update dest_acc balance with balance minus transfered ammount
 
             t.Status = "Sucessful" #update ransaction status as sucesful
             t.Response_Code = "Processed" #change Response code to processed
@@ -103,14 +110,16 @@ def transfer(request):
 
             user_acc.save() #save new balance to user
             dest_acc.save()#save new balance to destination
+
         messages.info(request, "Transfer Successful!")
-        return redirect("ATM:homepage", Transaction_ID=t.Transaction_ID)
-
+        return redirect("ATM:homepage")
+    #if not POST request
     else:
-        form = forms.CashTransForm()
-
-    if not request.user.is_authenticated:
-        return render(request, "ATM/unath_cash_transfer.html", {"form": form})
+        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        if not request.user.is_authenticated:
+            form = forms.CashTransNotLoginForm()
+        else:
+            form = forms.CashTransForm()
     return render(request, "ATM/cash_transfer.html", {"form": form})
 
 #Logout current user

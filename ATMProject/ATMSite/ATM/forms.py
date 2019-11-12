@@ -10,19 +10,17 @@ class CashTransForm(forms.ModelForm):
         model = models.Cash_Transfer
         fields = ['Beneficiary_Account_Number', 'Beneficiary_Name', 'Amout_Transferred']
 
-<<<<<<< HEAD
 class CashTransNotLoginForm(forms.ModelForm):
-    class Meta:
-        model = models.Cash_Transfer
-        fields = ['Beneficiary_Account_Number', 'Beneficiary_Name', 'Amout_Transferred']
+    card_number = forms.IntegerField()
+    pin = forms.IntegerField()
+    class Meta(CashTransForm.Meta):
+        fields = ['card_number', 'pin'] + CashTransForm.Meta.fields 
 
-=======
 class CashWithdrawal(forms.ModelForm):
     class Meta:
         model = models.Cash_Withdrawal
         fields = ['Amount_Transferred']
->>>>>>> 87ec1589cf7a872b7646e3dcdb79ce51c8c727da
-
+        
 class UserAdminCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
