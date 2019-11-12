@@ -55,6 +55,8 @@ class AtMachine(models.Model):
 	Status = models.CharField(max_length=50)
 	Last_Refill_Date = models.DateField()
 	Next_Maintenance_Date = models.DateField()
+	def __str__(self):
+		return str(self.At_Machine_UID)
 
 class ATMachineRefill(models.Model):
 	Refill_ID = models.AutoField(primary_key = True)
@@ -63,6 +65,8 @@ class ATMachineRefill(models.Model):
 	ATM_Branch = models.CharField(max_length=100)
 	Refill_Date = models.DateField()
 	Previous_Balance = models.DecimalField(max_digits=25,decimal_places=0,default=0)
+	def __str__(self):
+		return str(self.Refill_ID)
 
 class Transaction(models.Model):
 	Transaction_ID = models.AutoField(primary_key=True)
@@ -72,32 +76,44 @@ class Transaction(models.Model):
 	Status = models.CharField(max_length=50)
 	Response_Code = models.CharField(max_length=256)
 	Type_Of_Transaction = models.CharField(max_length=50)
+	def __str__(self):
+		return str(self.Transaction_ID)
 
 
 class Phone_Change(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	New_Phone_Number = models.CharField(max_length=20, default='0')
+	def __str__(self):
+		return str(self.Transaction_ID)
 
 class Pin_Change(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	Previous_Pin = models.IntegerField()
 	New_Pin = models.IntegerField()
+	def __str__(self):
+		return str(self.Transaction_ID)
 
 class Cash_Withdrawal(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	Amount_Transferred = models.DecimalField(max_digits=25, decimal_places=2,default=0)
 	Denomination = models.CharField(max_length=20, default='USD')
 	Current_Balance = models.DecimalField(max_digits=20, decimal_places=10, default=0)
+	def __str__(self):
+		return str(self.Transaction_ID)
 
 class Cash_Transfer(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	Beneficiary_Account_Number = models.IntegerField()
 	Beneficiary_Name = models.CharField(max_length=60)
 	Amout_Transferred = models.DecimalField(max_digits=25, decimal_places=2,default=0)
+	def __str__(self):
+		return str(self.Transaction_ID)
 
 class Balance_Enquiry(models.Model):
 	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
 	Balance_Amount = models.DecimalField(max_digits=20, decimal_places=10, default=0)
+	def __str__(self):
+		return str(self.Transaction_ID)
 
 #custom user creation
 class UserManager(BaseUserManager):
