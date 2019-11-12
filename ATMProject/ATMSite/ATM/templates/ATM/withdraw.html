@@ -1,5 +1,11 @@
-{% extends "ATM/header.html"%}
+{% extends "ATM/header.html" %}
 
-{% block content %}
-<h1>Withdraw Page!</h1>
+{%block content %}
+<h1>Cash Withdrawal</h1>
+<form method="post">
+    {% csrf_token %}
+        {{ form }}
+
+    <button type="submit" class="btn btn-primary">Withdrawal Amount</button>
+</form>
 {% endblock %}

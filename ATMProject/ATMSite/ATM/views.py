@@ -21,6 +21,45 @@ def enquiry(request):
 
 @login_required(login_url="/ATM/login/")
 def withdraw(request):
+    w = models.Transaction(
+        ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
+        Date=timezone.now(),
+        At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
+        Status="Unsucessful",
+        Response_Code="Unable to process",
+        Type_Of_Transaction="Withdrawal/"
+    )
+    w.save()
+
+    if request.method == "POST":
+        form = forms.CashWithdrawal(request.POST)
+        if form.is_valid():
+            form.Transaction_ID = w.Transaction_ID
+            form.save()
+
+            transfer_amount = form.cleaned_data.get('Amount_Transferred')
+            user_acc = request.user.Account_Number  # get current user AccountExtension model
+            if transfer_amount > user_acc.Balance:
+                w.Status = "Failure"
+                w.Response_Code = "Processed"
+                w.save()
+                messages.info(request, "Withdrawal Failed")
+                return redirect("ATM:homepage")
+            user_acc.Balance = user_acc.Balance - transfer_amount
+
+            w.Status = "Successful"  # update ransaction status as sucesful
+            w.Response_Code = "Processed"  # change Response code to processed
+            w.save()  # save new information
+            user_acc.save()
+
+        messages.info(request, "Widthdrawl Successful")
+        return redirect("ATM:homepage")
+
+    else:
+        form = forms.CashWithdrawal()
+
+    return render(request, "ATM/withdraw.html", {"form": form})
+
     return render(request, "ATM/withdraw.html")
 
 def transfer(request):
