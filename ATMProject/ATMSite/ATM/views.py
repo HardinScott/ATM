@@ -17,9 +17,14 @@ def index(request):
 
 @login_required(login_url="/ATM/login/") #ensures that user is logged in before allowing accessing page
 def enquiry(request):
-    messages.info(request, request.user)
-    messages.info(request, models.AccountExtension.objects.get(Account_Number=request.user.Account_Number).Balance)
-    return redirect("ATM:homepage")
+    if request.user.is_authenticated:
+        acc_num = request.user.Account_Number
+        this_acc_ext = models.AccountExtension.objects.get(Account_Number=str(acc_num))
+        messages.info(request, "$%s" % this_acc_ext.Balance)
+#        messages.info(request, models.AccountExtension.objects.get(Account_Number=acc_num).Balance)
+        return redirect("ATM:homepage")
+    else:
+        return redirect("ATM/login")
 
 @login_required(login_url="/ATM/login/")
 def withdraw(request):
