@@ -35,8 +35,15 @@ class UserAdmin(BaseUserAdmin):
     ordering = ('username',)
     filter_horizontal = ()
 
-admin.site.register(AccountExtension)
-admin.site.register(AtmCard)
+class AccountExtensionAdmin(admin.ModelAdmin):
+    list_display = ('Account_Number', 'Name')
+
+class AtmCardAdmin(admin.ModelAdmin):
+    list_display = ('Atm_Card_Number', 'Account_Number', 'Name')
+
+
+admin.site.register(AccountExtension, AccountExtensionAdmin)
+admin.site.register(AtmCard, AtmCardAdmin)
 admin.site.register(AtMachine)
 admin.site.register(ATMachineRefill)
 admin.site.register(Transaction)

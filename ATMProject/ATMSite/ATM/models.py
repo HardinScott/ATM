@@ -81,39 +81,44 @@ class Transaction(models.Model):
 
 
 class Phone_Change(models.Model):
-	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Phone_Change_ID = models.AutoField(primary_key=True)
+	Transaction_ID = models.ForeignKey(Transaction, on_delete=models.PROTECT)
 	New_Phone_Number = models.CharField(max_length=20, default='0')
 	def __str__(self):
-		return str(self.Transaction_ID)
+		return str(self.Phone_Change_ID)
 
 class Pin_Change(models.Model):
-	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Pin_Change_ID = models.AutoField(primary_key=True)
+	Transaction_ID = models.ForeignKey(Transaction, on_delete=models.PROTECT)
 	Previous_Pin = models.IntegerField()
 	New_Pin = models.IntegerField()
 	def __str__(self):
-		return str(self.Transaction_ID)
+		return str(self.Pin_Change_ID)
 
 class Cash_Withdrawal(models.Model):
-	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Cash_Withdrawal_ID = models.AutoField(primary_key=True)
+	Transaction_ID = models.ForeignKey(Transaction, on_delete=models.PROTECT)
 	Amount_Transferred = models.DecimalField(max_digits=25, decimal_places=2,default=0)
 	Denomination = models.CharField(max_length=20, default='USD')
 	Current_Balance = models.DecimalField(max_digits=20, decimal_places=10, default=0)
 	def __str__(self):
-		return str(self.Transaction_ID)
+		return str(self.Cash_Withdrawal_ID)
 
 class Cash_Transfer(models.Model):
-	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Cash_Withdrawal_ID = models.AutoField(primary_key=True)
+	Transaction_ID = models.ForeignKey(Transaction, on_delete=models.PROTECT)
 	Beneficiary_Account_Number = models.IntegerField()
 	Beneficiary_Name = models.CharField(max_length=60)
 	Amout_Transferred = models.DecimalField(max_digits=25, decimal_places=2,default=0)
 	def __str__(self):
-		return str(self.Transaction_ID)
+		return str(self.Cash_Withdrawal_ID)
 
 class Balance_Enquiry(models.Model):
-	Transaction_ID = models.OneToOneField(Transaction, on_delete=models.CASCADE, primary_key=True, db_column='Transaction_ID', parent_link=True)
+	Balance_Enquiry_ID = models.AutoField(primary_key=True)
+	Transaction_ID = models.ForeignKey(Transaction, on_delete=models.PROTECT)
 	Balance_Amount = models.DecimalField(max_digits=20, decimal_places=10, default=0)
 	def __str__(self):
-		return str(self.Transaction_ID)
+		return str(self.Balance_Enquiry_ID)
 
 #custom user creation
 class UserManager(BaseUserManager):

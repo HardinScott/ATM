@@ -20,6 +20,10 @@ class CashWithdrawal(forms.ModelForm):
     class Meta:
         model = models.Cash_Withdrawal
         fields = ['Amount_Transferred']
+
+class CardAndPinForm(forms.ModelForm):
+    card_number = forms.IntegerField()
+    pin = forms.IntegerField()
         
 class UserAdminCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
