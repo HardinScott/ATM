@@ -18,7 +18,7 @@ def index(request):
     return render(request, "ATM/index.html")
 
 
-<<<<<<< HEAD
+
 def enquiry(request):
     #gets information from CashTransForms
     if request.method == "POST" or request.user.is_authenticated:
@@ -81,18 +81,6 @@ def enquiry(request):
         form = forms.CardAndPinForm()
     return render(request, "ATM/get_card_pin.html", {"form": form})
 
-=======
-@login_required(login_url="/ATM/login/")  # ensures that user is logged in before allowing accessing page
-def enquiry(request):
-    if request.user.is_authenticated:
-        acc_num = request.user.Account_Number
-        this_acc_ext = models.AccountExtension.objects.get(Account_Number=str(acc_num))
-        messages.info(request, "$%s" % this_acc_ext.Balance)
-        #        messages.info(request, models.AccountExtension.objects.get(Account_Number=acc_num).Balance)
-        return redirect("ATM:homepage")
-    else:
-        return redirect("ATM/login")
->>>>>>> 0d69ce3081fe3569d2e5a260dde10fdddff7a78c
 
 
 
@@ -208,14 +196,11 @@ def transfer(request):
                     user_acc = None
             if user_acc == None:
                 messages.error(request, "Users account invalid!")
-<<<<<<< HEAD
+
                 return redirect("ATM:transfer")
 
             #creates new transaction and gets information
-=======
-                return redirect("ATM: transfer")
-            # creates new transaction and gets information
->>>>>>> 0d69ce3081fe3569d2e5a260dde10fdddff7a78c
+
             t = models.Transaction(
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
@@ -224,7 +209,6 @@ def transfer(request):
                 Response_Code="Unable to process",
                 Type_Of_Transaction="Transfer"
             )
-<<<<<<< HEAD
             t.save()
 
             #insert transaction ID into form model for Cash_Transfer
@@ -236,23 +220,12 @@ def transfer(request):
                 dest_acc = models.AccountExtension.objects.get(Account_Number=form.cleaned_data.get('Beneficiary_Account_Number')) #get destination Account Extension
                 if dest_acc.Account_Number == user_acc.Account_Number:
                     raise ValueError('Invalid beneficiary account')
-=======
-            t.save()  # save tranaction with base info
-
-            form.Transaction_ID = t.Transaction_ID  # put trans id into transfer model
-            form.save()  # save Cash_Transfer model
-
-            try:
-                dest_acc = models.AccountExtension.objects.get(Account_Number=form.cleaned_data.get(
-                    'Beneficiary_Account_Number'))  # get destination Account Extension
->>>>>>> 0d69ce3081fe3569d2e5a260dde10fdddff7a78c
             except:
                 t.Response_Code = "Beneficiary account invalid"
                 t.save()
                 messages.error(request, "Beneficiary account number invalid!")
                 return redirect("ATM:transfer")
 
-<<<<<<< HEAD
             #check account has funds
             transfer_ammount = form.cleaned_data.get('Amout_Transferred') #get tranfer ammount from form
             if user_acc.Balance < transfer_ammount:
@@ -276,23 +249,6 @@ def transfer(request):
             return redirect("ATM:homepage")
 
     #if not POST request
-=======
-            transfer_ammount = form.cleaned_data.get('Amout_Transferred')  # get tranfer ammount from form
-
-            user_acc.Balance = user_acc.Balance - transfer_ammount  # update user_acc balance with balance minus transfered ammount
-            dest_acc.Balance = dest_acc.Balance - transfer_ammount  # update dest_acc balance with balance minus transfered ammount
-
-            t.Status = "Sucessful"  # update ransaction status as sucesful
-            t.Response_Code = "Processed"  # change Response code to processed
-            t.save()  # save new information
-
-            user_acc.save()  # save new balance to user
-            dest_acc.save()  # save new balance to destination
-
-        messages.info(request, "Transfer Successful!")
-        return redirect("ATM:homepage")
-    # if not POST request
->>>>>>> 0d69ce3081fe3569d2e5a260dde10fdddff7a78c
     else:
         # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
         if not request.user.is_authenticated:
