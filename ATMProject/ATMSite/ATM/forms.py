@@ -16,12 +16,18 @@ class CashTransNotLoginForm(forms.ModelForm):
     class Meta(CashTransForm.Meta):
         fields = ['card_number', 'pin'] + CashTransForm.Meta.fields 
 
-class CashWithdrawal(forms.ModelForm):
+class CashWithdrawalForm(forms.ModelForm):
     class Meta:
         model = models.Cash_Withdrawal
         fields = ['Amount_Transferred']
 
-class CardAndPinForm(forms.ModelForm):
+class CashWithdrawalNotLoginForm(forms.ModelForm):
+    card_number = forms.IntegerField()
+    pin = forms.IntegerField()
+    class Meta(CashWithdrawalForm.Meta):
+        fields = ['card_number', 'pin'] + CashWithdrawalForm.Meta.fields 
+
+class CardAndPinForm(forms.Form):
     card_number = forms.IntegerField()
     pin = forms.IntegerField()
         

@@ -18,12 +18,77 @@ def index(request):
 
 def enquiry(request):
     #gets information from CashTransForms
+    if request.method == "POST" or request.user.is_authenticated:
+        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        if request.user.is_authenticated:
+            if request.user.is_authenticated:
+                try:
+                    user_acc = request.user.Account_Number #get current user AccountExtension model
+                except:
+                    user_acc = None #account not found
+        form = forms.CardAndPinForm(request.POST)
+
+        #check if form is valid.
+        if form.is_valid() or request.user.is_authenticated:
+            #determine if user is logged in or needs to enter card and pin number
+            if request.user.is_authenticated:
+                try:
+                    user_acc = request.user.Account_Number #get current user AccountExtension model
+                except:
+                    user_acc = None #account not found
+            else:
+                try:
+                    atm_card = models.AtmCard.objects.get(Atm_Card_Number=form.cleaned_data.get('card_number')) #get Atmcard model for card number
+                except:
+                    atm_card = None #AtmCard not found
+                pin_numb = form.cleaned_data.get('pin')
+
+                if atm_card is None or atm_card.PIN != pin_numb:
+                    messages.error(request, "Atm card number or pin not valid!")
+                    return redirect("ATM:enquiry")
+                try:
+                    user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number.Account_Number) #get Account Extension from atm card
+                except:
+                    user_acc = None
+            if user_acc == None:
+                messages.error(request, "Users account invalid!")
+                return redirect("ATM:enquiry")
+
+            #creates new transaction and gets information
+            t = models.Transaction(
+                ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
+                Date=timezone.now(),
+                At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=getCurrentATM()),
+                Status="Unsucessful",
+                Response_Code="Unable to process",
+                Type_Of_Transaction="Balance enquiry"
+            )
+            t.save()
+
+            #updates Balance
+            balanceObj = models.Balance_Enquiry(
+                Balance_Amount = user_acc.Balance,
+                Transaction_ID = t,
+                )
+            balanceObj.save()
+            return render(request, "ATM/balance.html", {"user_acc": user_acc})
+
+    else:
+        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        form = forms.CardAndPinForm()
+    return render(request, "ATM/get_card_pin.html", {"form": form})
+
+
+
+
+def withdraw(request):
+    #gets information from CashTransForms
     if request.method == "POST":
         #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
         if not request.user.is_authenticated:
-            form = forms.CashTransNotLoginForm(request.POST)
+            form = forms.CashWithdrawalNotLoginForm(request.POST)
         else:
-            form = forms.CashTransForm(request.POST)
+            form = forms.CashWithdrawalForm(request.POST)
         
         #check if form is valid.
         if form.is_valid():
@@ -42,51 +107,28 @@ def enquiry(request):
 
                 if atm_card is None or atm_card.PIN != pin_numb:
                     messages.error(request, "Atm card number or pin not valid!")
-                    return redirect("ATM:transfer")
+                    return redirect("ATM:withdraw")
                 try:
                     user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number.Account_Number) #get Account Extension from atm card
                 except:
                     user_acc = None
             if user_acc == None:
                 messages.error(request, "Users account invalid!")
-                return redirect("ATM: transfer")
+                return redirect("ATM:withdraw")
 
-            #creates new transaction and gets information
-            t = models.Transaction(
-                ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
+            w = models.Transaction(
+                ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
                 Date=timezone.now(),
-                At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=getCurrentATM()),
+                At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
                 Status="Unsucessful",
                 Response_Code="Unable to process",
-                Type_Of_Transaction="Transfer"
+                Type_Of_Transaction="Withdrawal"
             )
-            t.save()
-    else:
-        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
-        if not request.user.is_authenticated:
-            form = forms.CashTransNotLoginForm()
-        else:
-            form = forms.CashTransForm()
-    return render(request, "ATM/get_card_pin.html", {"form": form})
+            w.save()
 
-
-
-def withdraw(request):
-    w = models.Transaction(
-        ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
-        Date=timezone.now(),
-        At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
-        Status="Unsucessful",
-        Response_Code="Unable to process",
-        Type_Of_Transaction="Withdrawal/"
-    )
-    w.save()
-
-    if request.method == "POST":
-        form = forms.CashWithdrawal(request.POST)
-        if form.is_valid():
-            form.Transaction_ID = w.Transaction_ID
-            form.save()
+            withdrawObj = form.save(commit=False)
+            withdrawObj.Transaction_ID = w
+            withdrawObj.save()
 
             transfer_amount = form.cleaned_data.get('Amount_Transferred')
             user_acc = request.user.Account_Number  # get current user AccountExtension model
@@ -106,10 +148,14 @@ def withdraw(request):
         messages.info(request, "Widthdrawl Successful")
         return redirect("ATM:homepage")
 
+#if not POST request
     else:
-        form = forms.CashWithdrawal()
-
-    return render(request, "ATM/withdraw.html", {"form": form})
+        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        if not request.user.is_authenticated:
+            form = forms.CashWithdrawalNotLoginForm()
+        else:
+            form = forms.CashWithdrawalForm()
+    return render(request, "ATM/cash_transfer.html", {"form": form})
 
 def transfer(request):
     #gets information from CashTransForms
@@ -144,7 +190,7 @@ def transfer(request):
                     user_acc = None
             if user_acc == None:
                 messages.error(request, "Users account invalid!")
-                return redirect("ATM: transfer")
+                return redirect("ATM:transfer")
 
             #creates new transaction and gets information
             t = models.Transaction(
