@@ -41,6 +41,9 @@ class AccountExtensionAdmin(admin.ModelAdmin):
 class AtmCardAdmin(admin.ModelAdmin):
     list_display = ('Atm_Card_Number', 'Account_Number', 'Name')
 
+class Cash_TransferAdmin(admin.ModelAdmin):
+    list_display = ('Cash_Withdrawal_ID', 'Transaction_ID', 'Beneficiary_Account_Number')
+
 
 admin.site.register(AccountExtension, AccountExtensionAdmin)
 admin.site.register(AtmCard, AtmCardAdmin)
@@ -50,7 +53,7 @@ admin.site.register(Transaction)
 admin.site.register(Phone_Change)
 admin.site.register(Pin_Change)
 admin.site.register(Cash_Withdrawal)
-admin.site.register(Cash_Transfer)
+admin.site.register(Cash_Transfer, Cash_TransferAdmin)
 admin.site.register(Balance_Enquiry)
 admin.site.register(User, UserAdmin)
 
