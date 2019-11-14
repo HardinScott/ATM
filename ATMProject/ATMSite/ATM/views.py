@@ -120,7 +120,7 @@ def withdraw(request):
                 return redirect("ATM:withdraw")
 
             w = models.Transaction(
-                ATM_Card_Number=models.AtmCard.objects.get(Account_Number=request.user.Account_Number),
+                ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
                 At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
                 Status="Unsucessful",
