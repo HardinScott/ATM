@@ -18,46 +18,46 @@ def index(request):
     return render(request, "ATM/index.html")
 
 
-
 def enquiry(request):
-    #gets information from CashTransForms
+    # gets information from CashTransForms
     if request.method == "POST" or request.user.is_authenticated:
-        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
-        if request.user.is_authenticated:
-            if request.user.is_authenticated:
-                try:
-                    user_acc = request.user.Account_Number #get current user AccountExtension model
-                except:
-                    user_acc = None #account not found
         form = forms.CardAndPinForm(request.POST)
 
-        #check if form is valid.
+        # check if form is valid.
         if form.is_valid() or request.user.is_authenticated:
-            #determine if user is logged in or needs to enter card and pin number
+            # determine if user is logged in or needs to enter card and pin number
             if request.user.is_authenticated:
                 try:
-                    user_acc = request.user.Account_Number #get current user AccountExtension model
+                    user_acc = request.user.Account_Number  # get current user AccountExtension model
                 except:
-                    user_acc = None #account not found
+                    user_acc = None  # account not found
+                try:
+                    atm_card =  models.AtmCard.objects.get(
+                        Account_Number=user_acc.Account_Number)
+                except:
+                    messages.error(request, "Account Does not have ATM card!")
+                    return redirect("ATM:homepage")
             else:
                 try:
-                    atm_card = models.AtmCard.objects.get(Atm_Card_Number=form.cleaned_data.get('card_number')) #get Atmcard model for card number
+                    atm_card = models.AtmCard.objects.get(
+                        Atm_Card_Number=form.cleaned_data.get('card_number'))  # get Atmcard model for card number
                 except:
-                    atm_card = None #AtmCard not found
+                    atm_card = None  # AtmCard not found
                 pin_numb = form.cleaned_data.get('pin')
 
                 if atm_card is None or atm_card.PIN != pin_numb:
                     messages.error(request, "Atm card number or pin not valid!")
                     return redirect("ATM:enquiry")
                 try:
-                    user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number.Account_Number) #get Account Extension from atm card
+                    user_acc = models.AccountExtension.objects.get(
+                        Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
                 except:
                     user_acc = None
             if user_acc == None:
                 messages.error(request, "Users account invalid!")
                 return redirect("ATM:enquiry")
 
-            #creates new transaction and gets information
+            # creates new transaction and gets information
             t = models.Transaction(
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
@@ -68,54 +68,63 @@ def enquiry(request):
             )
             t.save()
 
-            #updates Balance
+            # updates Balance
             balanceObj = models.Balance_Enquiry(
-                Balance_Amount = user_acc.Balance,
-                Transaction_ID = t,
-                )
+                Balance_Amount=user_acc.Balance,
+                Transaction_ID=t,
+            )
             balanceObj.save()
+            t.Status = "Sucessful"  # update ransaction status as sucesful
+            t.Response_Code = "Processed"  # change Response code to processed
+            t.save()  # save new informatio
             return render(request, "ATM/balance.html", {"user_acc": user_acc})
 
     else:
-        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
         form = forms.CardAndPinForm()
     return render(request, "ATM/get_card_pin.html", {"form": form})
 
 
-
-
 def withdraw(request):
-    #gets information from CashTransForms
+    # gets information from CashTransForms
     if request.method == "POST":
-        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
         if not request.user.is_authenticated:
             form = forms.CashWithdrawalNotLoginForm(request.POST)
         else:
             form = forms.CashWithdrawalForm(request.POST)
-        
-        #check if form is valid.
+
+        # check if form is valid.
         if form.is_valid():
-            #determine if user is logged in or needs to enter card and pin number
+            # determine if user is logged in or needs to enter card and pin number
             if request.user.is_authenticated:
                 try:
-                    user_acc = request.user.Account_Number #get current user AccountExtension model
+                    user_acc = request.user.Account_Number  # get current user AccountExtension model
                 except:
-                    user_acc = None #account not found
+                    user_acc = None  # account not found
+                try:
+                    atm_card =  models.AtmCard.objects.get(
+                        Account_Number=user_acc.Account_Number)
+                except:
+                    messages.error(request, "Account Does not have ATM card!")
+                    return redirect("ATM:homepage")
             else:
                 try:
-                    atm_card = models.AtmCard.objects.get(Atm_Card_Number=form.cleaned_data.get('card_number')) #get Atmcard model for card number
+                    atm_card = models.AtmCard.objects.get(
+                        Atm_Card_Number=form.cleaned_data.get('card_number'))  # get Atmcard model for card number
                 except:
-                    atm_card = None #AtmCard not found
+                    atm_card = None  # AtmCard not found
                 pin_numb = form.cleaned_data.get('pin')
 
                 if atm_card is None or atm_card.PIN != pin_numb:
                     messages.error(request, "Atm card number or pin not valid!")
                     return redirect("ATM:withdraw")
                 try:
-                    user_acc = models.AccountExtension.objects.get(Account_Number=atm_card.Account_Number.Account_Number) #get Account Extension from atm card
+                    user_acc = models.AccountExtension.objects.get(
+                        Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
                 except:
                     user_acc = None
-            if user_acc == None:
+            if user_acc is None:
                 messages.error(request, "Users account invalid!")
                 return redirect("ATM:withdraw")
 
@@ -132,7 +141,6 @@ def withdraw(request):
             withdrawObj = form.save(commit=False)
             withdrawObj.Transaction_ID = w
             withdrawObj.save()
-
             transfer_amount = form.cleaned_data.get('Amount_Transferred')
             if transfer_amount > user_acc.Balance:
                 w.Status = "Failure"
@@ -150,14 +158,14 @@ def withdraw(request):
         messages.info(request, "Widthdrawl Successful")
         return redirect("ATM:homepage")
 
-#if not POST request
+    # if not POST request
     else:
-        #check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
         if not request.user.is_authenticated:
             form = forms.CashWithdrawalNotLoginForm()
         else:
             form = forms.CashWithdrawalForm()
-    return render(request, "ATM/cash_transfer.html", {"form": form})
+    return render(request, "ATM/withdraw.html", {"form": form})
 
 
 def transfer(request):
@@ -177,6 +185,12 @@ def transfer(request):
                     user_acc = request.user.Account_Number  # get current user AccountExtension model
                 except:
                     user_acc = None  # account not found
+                try:
+                    atm_card =  models.AtmCard.objects.get(
+                        Account_Number=user_acc.Account_Number)
+                except:
+                    messages.error(request, "Account Does not have ATM card!")
+                    return redirect("ATM:homepage")
             else:
                 try:
                     atm_card = models.AtmCard.objects.get(
@@ -195,28 +209,28 @@ def transfer(request):
                     user_acc = None
             if user_acc == None:
                 messages.error(request, "Users account invalid!")
-
                 return redirect("ATM:transfer")
 
-            #creates new transaction and gets information
+            # creates new transaction and gets information
 
             t = models.Transaction(
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
                 At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=getCurrentATM()),
-                Status="Unsucessful",
+                Status="Unsuccessful",
                 Response_Code="Unable to process",
                 Type_Of_Transaction="Transfer"
             )
             t.save()
 
-            #insert transaction ID into form model for Cash_Transfer
-            transferObj = form.save(commit=False) #save tranaction with base info
+            # insert transaction ID into form model for Cash_Transfer
+            transferObj = form.save(commit=False)  # save tranaction with base info
             transferObj.Transaction_ID = t
             transferObj.save()
-            #get destination account
+            # get destination account
             try:
-                dest_acc = models.AccountExtension.objects.get(Account_Number=form.cleaned_data.get('Beneficiary_Account_Number')) #get destination Account Extension
+                dest_acc = models.AccountExtension.objects.get(Account_Number=form.cleaned_data.get(
+                    'Beneficiary_Account_Number'))  # get destination Account Extension
                 if dest_acc.Account_Number == user_acc.Account_Number:
                     raise ValueError('Invalid beneficiary account')
             except:
@@ -225,29 +239,28 @@ def transfer(request):
                 messages.error(request, "Beneficiary account number invalid!")
                 return redirect("ATM:transfer")
 
-            #check account has funds
-            transfer_ammount = form.cleaned_data.get('Amout_Transferred') #get tranfer ammount from form
+            # check account has funds
+            transfer_ammount = form.cleaned_data.get('Amout_Transferred')  # get tranfer ammount from form
             if user_acc.Balance < transfer_ammount:
                 t.Response_Code = "Insufficient funds"
                 t.save()
                 messages.info(request, "Transfer Unsuccessful, insufficient funds!")
                 return redirect("ATM:transfer")
-                            
 
-            #process Transfer   
-            user_acc.Balance = user_acc.Balance -  transfer_ammount #update user_acc balance with balance minus transfered ammount
-            dest_acc.Balance = dest_acc.Balance + transfer_ammount #update dest_acc balance with balance plus transfered ammount
-            user_acc.save() #save new balance to user
-            dest_acc.save()#save new balance to destination
+            # process Transfer
+            user_acc.Balance = user_acc.Balance - transfer_ammount  # update user_acc balance with balance minus transfered ammount
+            dest_acc.Balance = dest_acc.Balance + transfer_ammount  # update dest_acc balance with balance plus transfered ammount
+            user_acc.save()  # save new balance to user
+            dest_acc.save()  # save new balance to destination
 
-            #update Transaction as sucessfull
-            t.Status = "Sucessful" #update ransaction status as sucesful
-            t.Response_Code = "Processed" #change Response code to processed
-            t.save() #save new information
+            # update Transaction as sucessfull
+            t.Status = "Sucessful"  # update ransaction status as sucesful
+            t.Response_Code = "Processed"  # change Response code to processed
+            t.save()  # save new information
             messages.info(request, "Transfer Successful!")
             return redirect("ATM:homepage")
 
-    #if not POST request
+    # if not POST request
     else:
         # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
         if not request.user.is_authenticated:
