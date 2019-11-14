@@ -133,9 +133,9 @@ def withdraw(request):
             withdrawObj = form.save(commit=False)
             withdrawObj.Transaction_ID = w
             withdrawObj.save()
-
             transfer_amount = form.cleaned_data.get('Amount_Transferred')
-            user_acc = request.user.Account_Number  # get current user AccountExtension model
+            if request.user.is_authenticated:
+                user_acc = request.user.Account_Number  # get current user AccountExtension model
             if transfer_amount > user_acc.Balance:
                 w.Status = "Failure"
                 w.Response_Code = "Processed"
