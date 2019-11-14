@@ -237,7 +237,7 @@ def transfer(request):
 
             #process Transfer   
             user_acc.Balance = user_acc.Balance -  transfer_ammount #update user_acc balance with balance minus transfered ammount
-            dest_acc.Balance = dest_acc.Balance - transfer_ammount #update dest_acc balance with balance minus transfered ammount
+            dest_acc.Balance = dest_acc.Balance + transfer_ammount #update dest_acc balance with balance plus transfered ammount
             user_acc.save() #save new balance to user
             dest_acc.save()#save new balance to destination
 
