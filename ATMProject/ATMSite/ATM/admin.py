@@ -5,9 +5,9 @@ from django.contrib.auth import get_user_model
 from ATM.models import *
 from .forms import UserAdminCreationForm, UserAdminChangeForm
 
-
 # Register your models here.
 User = get_user_model()
+
 
 class UserAdmin(BaseUserAdmin):
     # The forms to add and change user instances
@@ -21,7 +21,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ('admin',)
     fieldsets = (
         (None, {'fields': ('username', 'password', 'Account_Number')}),
-        ('Permissions', {'fields': ('admin','staff','active',)}),
+        ('Permissions', {'fields': ('admin', 'staff', 'active',)}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
@@ -29,17 +29,20 @@ class UserAdmin(BaseUserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('username', 'password1', 'password2', 'Account_Number',)}
-        ),
+         ),
     )
     search_fields = ('username',)
     ordering = ('username',)
     filter_horizontal = ()
 
+
 class AccountExtensionAdmin(admin.ModelAdmin):
     list_display = ('Account_Number', 'Name')
 
+
 class AtmCardAdmin(admin.ModelAdmin):
     list_display = ('Atm_Card_Number', 'Account_Number', 'Name')
+
 
 class Cash_TransferAdmin(admin.ModelAdmin):
     list_display = ('Cash_Withdrawal_ID', 'Transaction_ID', 'Beneficiary_Account_Number')

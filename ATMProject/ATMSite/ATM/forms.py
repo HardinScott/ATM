@@ -5,32 +5,40 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 User = get_user_model()
 
+
 class CashTransForm(forms.ModelForm):
     class Meta:
         model = models.Cash_Transfer
         fields = ['Beneficiary_Account_Number', 'Beneficiary_Name', 'Amout_Transferred']
 
+
 class CashTransNotLoginForm(forms.ModelForm):
     card_number = forms.IntegerField()
     pin = forms.IntegerField()
+
     class Meta(CashTransForm.Meta):
-        fields = ['card_number', 'pin'] + CashTransForm.Meta.fields 
+        fields = ['card_number', 'pin'] + CashTransForm.Meta.fields
+
 
 class CashWithdrawalForm(forms.ModelForm):
     class Meta:
         model = models.Cash_Withdrawal
         fields = ['Amount_Transferred']
 
+
 class CashWithdrawalNotLoginForm(forms.ModelForm):
     card_number = forms.IntegerField()
     pin = forms.IntegerField()
+
     class Meta(CashWithdrawalForm.Meta):
-        fields = ['card_number', 'pin'] + CashWithdrawalForm.Meta.fields 
+        fields = ['card_number', 'pin'] + CashWithdrawalForm.Meta.fields
+
 
 class CardAndPinForm(forms.Form):
     card_number = forms.IntegerField()
     pin = forms.IntegerField()
-        
+
+
 class UserAdminCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
@@ -56,6 +64,7 @@ class UserAdminCreationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
 
 class UserAdminChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
