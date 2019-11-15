@@ -21,41 +21,17 @@ def index(request):
 def enquiry(request):
     # gets information from CashTransForms
     if request.method == "POST" or request.user.is_authenticated:
+        # get form and check if form is valid
         form = forms.CardAndPinForm(request.POST)
-
-        # check if form is valid.
         if form.is_valid() or request.user.is_authenticated:
-            # determine if user is logged in or needs to enter card and pin number
-            if request.user.is_authenticated:
-                try:
-                    user_acc = request.user.Account_Number  # get current user AccountExtension model
-                except:
-                    user_acc = None  # account not found
-                try:
-                    atm_card =  models.AtmCard.objects.get(
-                        Account_Number=user_acc.Account_Number)
-                except:
-                    messages.error(request, "Account Does not have ATM card!")
-                    return redirect("ATM:homepage")
-            else:
-                try:
-                    atm_card = models.AtmCard.objects.get(
-                        Atm_Card_Number=form.cleaned_data.get('card_number'))  # get Atmcard model for card number
-                except:
-                    atm_card = None  # AtmCard not found
-                pin_numb = form.cleaned_data.get('pin')
-
-                if atm_card is None or atm_card.PIN != pin_numb:
-                    messages.error(request, "Atm card number or pin not valid!")
-                    return redirect("ATM:enquiry")
-                try:
-                    user_acc = models.AccountExtension.objects.get(
-                        Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
-                except:
-                    user_acc = None
+            # Get user account and check for ATM card redirect if invalid
+            user_acc = getUserAccount(request, form)
             if user_acc == None:
-                messages.error(request, "Users account invalid!")
-                return redirect("ATM:enquiry")
+                #Redirect based on user authentication
+                if request.user.is_authenticated:
+                   return redirect("ATM:homepage")
+                else:
+                    return redirect("ATM:enquiry")
 
             # creates new transaction and gets information
             t = models.Transaction(
@@ -88,7 +64,7 @@ def enquiry(request):
 def withdraw(request):
     # gets information from CashTransForms
     if request.method == "POST":
-        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # get correct form based on use authentication
         if not request.user.is_authenticated:
             form = forms.CashWithdrawalNotLoginForm(request.POST)
         else:
@@ -96,37 +72,14 @@ def withdraw(request):
 
         # check if form is valid.
         if form.is_valid():
-            # determine if user is logged in or needs to enter card and pin number
-            if request.user.is_authenticated:
-                try:
-                    user_acc = request.user.Account_Number  # get current user AccountExtension model
-                except:
-                    user_acc = None  # account not found
-                try:
-                    atm_card =  models.AtmCard.objects.get(
-                        Account_Number=user_acc.Account_Number)
-                except:
-                    messages.error(request, "Account Does not have ATM card!")
-                    return redirect("ATM:homepage")
-            else:
-                try:
-                    atm_card = models.AtmCard.objects.get(
-                        Atm_Card_Number=form.cleaned_data.get('card_number'))  # get Atmcard model for card number
-                except:
-                    atm_card = None  # AtmCard not found
-                pin_numb = form.cleaned_data.get('pin')
-
-                if atm_card is None or atm_card.PIN != pin_numb:
-                    messages.error(request, "Atm card number or pin not valid!")
+            # Get user account and check for ATM card redirect if invalid
+            user_acc = getUserAccount(request, form)
+            if user_acc == None:
+                #Redirect based on user authentication
+                if request.user.is_authenticated:
+                   return redirect("ATM:homepage")
+                else:
                     return redirect("ATM:withdraw")
-                try:
-                    user_acc = models.AccountExtension.objects.get(
-                        Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
-                except:
-                    user_acc = None
-            if user_acc is None:
-                messages.error(request, "Users account invalid!")
-                return redirect("ATM:withdraw")
 
             w = models.Transaction(
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
@@ -160,7 +113,7 @@ def withdraw(request):
 
     # if not POST request
     else:
-        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # get correct form based on use authentication
         if not request.user.is_authenticated:
             form = forms.CashWithdrawalNotLoginForm()
         else:
@@ -171,7 +124,7 @@ def withdraw(request):
 def transfer(request):
     # gets information from CashTransForms
     if request.method == "POST":
-        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # get correct form based on use authentication
         if not request.user.is_authenticated:
             form = forms.CashTransNotLoginForm(request.POST)
         else:
@@ -179,40 +132,16 @@ def transfer(request):
 
         # check if form is valid.
         if form.is_valid():
-            # determine if user is logged in or needs to enter card and pin number
-            if request.user.is_authenticated:
-                try:
-                    user_acc = request.user.Account_Number  # get current user AccountExtension model
-                except:
-                    user_acc = None  # account not found
-                try:
-                    atm_card =  models.AtmCard.objects.get(
-                        Account_Number=user_acc.Account_Number)
-                except:
-                    messages.error(request, "Account Does not have ATM card!")
-                    return redirect("ATM:homepage")
-            else:
-                try:
-                    atm_card = models.AtmCard.objects.get(
-                        Atm_Card_Number=form.cleaned_data.get('card_number'))  # get Atmcard model for card number
-                except:
-                    atm_card = None  # AtmCard not found
-                pin_numb = form.cleaned_data.get('pin')
-
-                if atm_card is None or atm_card.PIN != pin_numb:
-                    messages.error(request, "Atm card number or pin not valid!")
-                    return redirect("ATM:transfer")
-                try:
-                    user_acc = models.AccountExtension.objects.get(
-                        Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
-                except:
-                    user_acc = None
+            # Get user account and check for ATM card redirect if invalid
+            user_acc = getUserAccount(request, form)
             if user_acc == None:
-                messages.error(request, "Users account invalid!")
-                return redirect("ATM:transfer")
+                #Redirect based on user authentication
+                if request.user.is_authenticated:
+                   return redirect("ATM:homepage")
+                else:
+                    return redirect("ATM:transfer")
 
             # creates new transaction and gets information
-
             t = models.Transaction(
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
@@ -262,7 +191,7 @@ def transfer(request):
 
     # if not POST request
     else:
-        # check if user is authenticated if anon then use CashTransNotLoginForm for card and pin number
+        # get correct form based on use authentication
         if not request.user.is_authenticated:
             form = forms.CashTransNotLoginForm()
         else:
@@ -303,6 +232,38 @@ def login_request(request):
     form = AuthenticationForm()  # gets Authentication form
     return render(request, "ATM/login.html", {"form": form})  # renders login page and form requests.
 
+def getUserAccount(request, form):
+    # determine if user is logged in or needs to enter card and pin number
+    if request.user.is_authenticated:
+        try:
+            user_acc = request.user.Account_Number  # get current user AccountExtension model
+        except:
+            messages.error(request, "Users account invalid!")
+            user_acc = None  # account not found
+        try:
+            atm_card =  models.AtmCard.objects.get(
+                Account_Number=user_acc.Account_Number)
+        except:
+            messages.error(request, "Account does not have ATM card!")
+            atm_card = None #atmCard not found for authorized user
+    else:
+        try:
+            atm_card = models.AtmCard.objects.get(
+                Atm_Card_Number=form.cleaned_data.get('card_number'))  # get Atmcard model for card number
+        except:
+            atm_card = None  # AtmCard not found with form data
+
+        if atm_card is None or atm_card.PIN != form.cleaned_data.get('pin'):
+            messages.error(request, "Atm card number or pin not valid!")
+            user_acc = None #pin did not match or ATM card not found using form data
+        else:
+            try:
+                user_acc = models.AccountExtension.objects.get(
+                    Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
+            except:
+                messages.error(request, "Issue with account associated ATM card, contact admin!")
+                user_acc = None #account not located with form data but ATM card and pin correct
+    return user_acc
 
 # Reads current UID for atm from ATM_UID.txt file in ATMSite directory
 def getCurrentATM():
