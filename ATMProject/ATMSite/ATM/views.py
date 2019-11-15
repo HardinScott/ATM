@@ -26,10 +26,10 @@ def enquiry(request):
         if form.is_valid() or request.user.is_authenticated:
             # Get user account and check for ATM card redirect if invalid
             user_acc = getUserAccount(request, form)
-            if user_acc == None:
-                #Redirect based on user authentication
+            if user_acc is None:
+                # Redirect based on user authentication
                 if request.user.is_authenticated:
-                   return redirect("ATM:homepage")
+                    return redirect("ATM:homepage")
                 else:
                     return redirect("ATM:enquiry")
 
@@ -38,7 +38,7 @@ def enquiry(request):
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
                 At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=getCurrentATM()),
-                Status="Unsucessful",
+                Status="Unsuccessful",
                 Response_Code="Unable to process",
                 Type_Of_Transaction="Balance enquiry"
             )
@@ -50,9 +50,9 @@ def enquiry(request):
                 Transaction_ID=t,
             )
             balanceObj.save()
-            t.Status = "Sucessful"  # update ransaction status as sucesful
+            t.Status = "Successful"  # update ransaction status as sucesful
             t.Response_Code = "Processed"  # change Response code to processed
-            t.save()  # save new informatio
+            t.save()  # save new information
             return render(request, "ATM/balance.html", {"user_acc": user_acc})
 
     else:
@@ -74,10 +74,10 @@ def withdraw(request):
         if form.is_valid():
             # Get user account and check for ATM card redirect if invalid
             user_acc = getUserAccount(request, form)
-            if user_acc == None:
-                #Redirect based on user authentication
+            if user_acc is None:
+                # Redirect based on user authentication
                 if request.user.is_authenticated:
-                   return redirect("ATM:homepage")
+                    return redirect("ATM:homepage")
                 else:
                     return redirect("ATM:withdraw")
 
@@ -85,7 +85,7 @@ def withdraw(request):
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
                 At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
-                Status="Unsucessful",
+                Status="Unsuccessful",
                 Response_Code="Unable to process",
                 Type_Of_Transaction="Withdrawal"
             )
@@ -108,7 +108,7 @@ def withdraw(request):
             w.save()  # save new information
             user_acc.save()
 
-        messages.info(request, "Widthdrawl Successful")
+        messages.info(request, "Withdrawal Successful")
         return redirect("ATM:homepage")
 
     # if not POST request
@@ -134,10 +134,10 @@ def transfer(request):
         if form.is_valid():
             # Get user account and check for ATM card redirect if invalid
             user_acc = getUserAccount(request, form)
-            if user_acc == None:
-                #Redirect based on user authentication
+            if user_acc is None:
+                # Redirect based on user authentication
                 if request.user.is_authenticated:
-                   return redirect("ATM:homepage")
+                    return redirect("ATM:homepage")
                 else:
                     return redirect("ATM:transfer")
 
@@ -183,7 +183,7 @@ def transfer(request):
             dest_acc.save()  # save new balance to destination
 
             # update Transaction as sucessfull
-            t.Status = "Sucessful"  # update ransaction status as sucesful
+            t.Status = "Successful"  # update ransaction status as sucesful
             t.Response_Code = "Processed"  # change Response code to processed
             t.save()  # save new information
             messages.info(request, "Transfer Successful!")
@@ -232,6 +232,7 @@ def login_request(request):
     form = AuthenticationForm()  # gets Authentication form
     return render(request, "ATM/login.html", {"form": form})  # renders login page and form requests.
 
+
 def getUserAccount(request, form):
     # determine if user is logged in or needs to enter card and pin number
     if request.user.is_authenticated:
@@ -241,11 +242,11 @@ def getUserAccount(request, form):
             messages.error(request, "Users account invalid!")
             user_acc = None  # account not found
         try:
-            atm_card =  models.AtmCard.objects.get(
+            atm_card = models.AtmCard.objects.get(
                 Account_Number=user_acc.Account_Number)
         except:
             messages.error(request, "Account does not have ATM card!")
-            atm_card = None #atmCard not found for authorized user
+            atm_card = None  # atmCard not found for authorized user
     else:
         try:
             atm_card = models.AtmCard.objects.get(
@@ -255,15 +256,16 @@ def getUserAccount(request, form):
 
         if atm_card is None or atm_card.PIN != form.cleaned_data.get('pin'):
             messages.error(request, "Atm card number or pin not valid!")
-            user_acc = None #pin did not match or ATM card not found using form data
+            user_acc = None  # pin did not match or ATM card not found using form data
         else:
             try:
                 user_acc = models.AccountExtension.objects.get(
                     Account_Number=atm_card.Account_Number.Account_Number)  # get Account Extension from atm card
             except:
                 messages.error(request, "Issue with account associated ATM card, contact admin!")
-                user_acc = None #account not located with form data but ATM card and pin correct
+                user_acc = None  # account not located with form data but ATM card and pin correct
     return user_acc
+
 
 # Reads current UID for atm from ATM_UID.txt file in ATMSite directory
 def getCurrentATM():
