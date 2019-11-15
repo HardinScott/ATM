@@ -1,11 +1,9 @@
-from django.http import HttpResponse
+from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from . import processing
+
 from . import forms
 from . import models
 
@@ -84,7 +82,7 @@ def withdraw(request):
             w = models.Transaction(
                 ATM_Card_Number=models.AtmCard.objects.get(Account_Number=user_acc.Account_Number),
                 Date=timezone.now(),
-                At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=1),
+                At_Machine_UID=models.AtMachine.objects.get(At_Machine_UID=getCurrentATM()),
                 Status="Unsuccessful",
                 Response_Code="Unable to process",
                 Type_Of_Transaction="Withdrawal"
@@ -103,7 +101,7 @@ def withdraw(request):
                 return redirect("ATM:homepage")
             user_acc.Balance = user_acc.Balance - transfer_amount
 
-            w.Status = "Successful"  # update ransaction status as sucesful
+            w.Status = "Successful"  # update transaction status as successful
             w.Response_Code = "Processed"  # change Response code to processed
             w.save()  # save new information
             user_acc.save()
@@ -177,13 +175,15 @@ def transfer(request):
                 return redirect("ATM:transfer")
 
             # process Transfer
-            user_acc.Balance = user_acc.Balance - transfer_ammount  # update user_acc balance with balance minus transfered ammount
-            dest_acc.Balance = dest_acc.Balance + transfer_ammount  # update dest_acc balance with balance plus transfered ammount
+            user_acc.Balance = user_acc.Balance - transfer_ammount  # update user_acc balance with balance minus
+            # transferred amount
+            dest_acc.Balance = dest_acc.Balance + transfer_ammount  # update dest_acc balance with balance plus
+            # transferred amount
             user_acc.save()  # save new balance to user
             dest_acc.save()  # save new balance to destination
 
-            # update Transaction as sucessfull
-            t.Status = "Successful"  # update ransaction status as sucesful
+            # update Transaction as successful
+            t.Status = "Successful"  # update transaction status as successful
             t.Response_Code = "Processed"  # change Response code to processed
             t.save()  # save new information
             messages.info(request, "Transfer Successful!")
@@ -269,7 +269,4 @@ def getUserAccount(request, form):
 
 # Reads current UID for atm from ATM_UID.txt file in ATMSite directory
 def getCurrentATM():
-    f = open("ATM_UID.txt", "r")
-    current_atm = f.readline()
-    f.close()
-    return int(current_atm)
+    return int(1)
